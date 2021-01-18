@@ -1,9 +1,25 @@
 sudo: required
-services: 
+language: generic
+
+services:
   - docker
 
 before_install:
-  - docker build -t tusharkhairnar/multi-container -f Dockerfile.dev ./client
+  - docker build -t tusharkhairnar/react-test -f ./client/Dockerfile.dev ./client
 
 script:
-  - docker run -e CI=true  tusharkhairnar/multi-container npm run test -- --coverage
+  - docker run -e CI=true stephengrider/react-test npm test
+
+after_success:
+  - docker build -t tusharkhairnar/multi-client ./client
+  - docker build -t tusharkhairnar/multi-nginx ./nginx
+  - docker build -t tusharkhairnar/multi-server ./server
+  - docker build -t tusharkhairnar/multi-worker ./worker
+  # Log in to the docker CLI
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  # Take those images and push them to docker hub
+  - docker push tusharkhairnar/multi-client
+  - docker push tusharkhairnar/multi-nginx
+  - docker push tusharkhairnar/multi-server
+  - docker push tusharkhairnar/multi-worker
+
