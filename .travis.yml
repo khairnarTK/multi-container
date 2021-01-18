@@ -1,0 +1,9 @@
+sudo: required
+services: 
+  - docker
+
+before_install:
+  - docker build -t tusharkhairnar/multi-container -f Dockerfile.dev ./client
+
+script:
+  - docker run -e CI=true  tusharkhairnar/multi-container npm run test -- --coverage
